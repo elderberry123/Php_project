@@ -78,15 +78,12 @@ $mysqli->close();
                   </h5>
 
                   <div class="form-outline mb-4">
-                    <input type="email" id="form2Example17" name="email" class="form-control form-control-lg" value="<?php 
-
-                       if(isset($_COOKIE["user_email"])){
-                        echo $_COOKIE["user_email"];
-                        } elseif(isset($_SESSION["user_email"])) {
-                         echo  $_SESSION['user_email'];
-                       }
-
-                       ?>" />
+                    <input type="email" id="form2Example17" name="email" class="form-control form-control-lg" value="<?php if (
+                        isset($_POST["submit"]) &&
+                        isset($_POST["email"])
+                    ) {
+                        echo $email;
+                    } ?>" />
 
 
                     <label class="form-label" for="form2Example17">Email address</label>
@@ -95,7 +92,7 @@ $mysqli->close();
                   </div>
 
                   <div class="form-outline mb-4">
-                    <input type="password" id="form2Example27" name="pass" class="form-control form-control-lg" />
+                    <input type="password" id="form2Example27" name="pass" class="form-control form-control-lg"  />
                     <label class="form-label" for="form2Example27">Password</label>
                     <p style="color:red;">
                       <pstyle="color: red;"><?php echo $pass_er ?>
