@@ -9,7 +9,7 @@ include "config.php";
         header("location:login.php");
       } elseif (isset($_SESSION["user_email"])) {
         unset($_SESSION["user_email"]);
-        echo session_destroy() ? "Successfully Logged Out" :
+        echo session_destroy();
         exit;
         header("location:login.php");
       }
