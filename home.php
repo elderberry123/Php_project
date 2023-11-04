@@ -3,9 +3,9 @@ session_start();
 include "config.php";
 
 if (isset($_COOKIE["user_email"])) {
-    echo $_COOKIE["user_email"];
+    $var= $_COOKIE["user_email"];
 } elseif (isset($_SESSION["user_email"])) {
-    echo $_SESSION["user_email"];
+    $var= $_SESSION["user_email"];
 }
 ?>
 
@@ -15,7 +15,7 @@ if (isset($_COOKIE["user_email"])) {
     <head>
         <title>Pagination</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-
+<link rel="stylesheet" href="style.css">
         <style>
             .pagination {
                 display: inline-block;
@@ -39,9 +39,10 @@ if (isset($_COOKIE["user_email"])) {
                 background-color: skyblue;
             }
         </style>
+        
     </head>
     <body>
-        <nav class="navbar navbar-default">
+        <!-- <nav class="navbar navbar-default">
             <div class="container-fluid">
 
                 <ul class="nav navbar-nav">
@@ -51,7 +52,27 @@ if (isset($_COOKIE["user_email"])) {
 
                 </ul>
             </div>
-        </nav>
+        </nav> -->
+
+        <nav class="navbar">
+        <div class="navbar-container container">
+            <input type="checkbox" name="" id="">
+            <div class="hamburger-lines">
+                <span class="line line1"></span>
+                <span class="line line2"></span>
+                <span class="line line3"></span>
+            </div>
+            <ul class="menu-items">
+            <li ><a  href="logout.php"><h4 class="btn btn-primary ">Logout</h2> </a></li>
+               
+            </ul>
+           <center> <h3 class="logo"><?php echo $var; ?></h1></center>
+        </div>
+    </nav>
+
+   
+
+        
         <center>
             <?php
             $per_page_record = 5; 
@@ -61,19 +82,23 @@ if (isset($_COOKIE["user_email"])) {
             } else {
                 $page = 1;
             }
+                  
 
             $start_from = ($page - 1) * $per_page_record;
             $query = "SELECT * FROM user_d LIMIT $start_from, $per_page_record";
             $rs_result = mysqli_query($mysqli, $query);
             ?>
 
-            <div class="container">
+
+
+            <div class="container" style="padding-top:150px;">
                 <br>
                 <div>
 
                     <table class="table table-striped table-bordered table-sm" cellspacing="0">
                         <thead>
                             <tr>
+                                //
                                 <th class="th-sm">Id</th>
                                 <th class="th-sm">Email</th>
                                 <th class="th-sm">First Name </th>
@@ -92,16 +117,19 @@ if (isset($_COOKIE["user_email"])) {
                               
                             ?>
                                 <tr>
-                                    <td><?php echo $row["id"] ?></td>
+                                    <td><?php echo  $row["id"] ?></td>
                                     <td><?php echo $row["email"] ?></td>
+
                                     <td><?php echo $row["fname"] ?></td>
                                     <td><?php echo $row["lname"] ?></td>
                                     <td><?php echo $row["dob"] ?></td>
+
+                                    
                                     <td><?php echo $row["numb"] ?></td>
                                     <td><?php echo $row["city"] ?></td>
                                     <td><?php echo $row["gender"] ?></td>
                                     <td><?php echo $row["departments"] ?></td>
-                                    <td><?php echo $row["filee"] ?></td>
+                                    <td><img src="my_directory/<?php echo $row["filee"] ?>" height="40px" width="40px"></td>
 
                                 </tr>
                             <?php
