@@ -75,6 +75,7 @@ if (isset($_COOKIE["user_email"])) {
         
         <center>
             <?php
+          
             $per_page_record = 5; 
 
             if (isset($_GET["page"])) {
@@ -85,46 +86,71 @@ if (isset($_COOKIE["user_email"])) {
                   
 
             $start_from = ($page - 1) * $per_page_record;
-            $query = "SELECT * FROM user_d LIMIT $start_from, $per_page_record";
-            $rs_result = mysqli_query($mysqli, $query);
-            ?>
+
+         
+            $columns = array('id','fname','lname','dob');
+
+            if (isset($_GET['column']) && in_array($_GET['column'], $columns)) {
+                 $column = $_GET['column'];
+            } else {
+                $columns = array('fname','lname','dob');
+                $column = $columns[0];
+            }       
+ 
+            if (isset($_GET['order']) && strtolower($_GET['order']) == 'desc') {    
+                $sort_order = 'DESC';
+            } else {
+                $sort_order = 'ASC';
+            }
+             
+            // Get the result...
+            if ($result = $mysqli->query("SELECT * FROM user_d ORDER BY $column $sort_order LIMIT $start_from, $per_page_record"  )) {
+                // Some variables we need for the table.
+                $up_or_down = str_replace(array('ASC','DESC'), array('up','down'), $sort_order);    
+                $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+                $add_class = ' class="highlight"';}
+
+?>
 
 
 
-            <div class="container" style="padding-top:150px;">
+
+
+            <div class="container" style="padding-top:150px;"> 
                 <br>
                 <div>
 
                     <table class="table table-striped table-bordered table-sm" cellspacing="0">
                         <thead>
                             <tr>
-                                //
-                                <th class="th-sm">Id</th>
+                                
+                            <th><a href="home.php?column=id&order=<?php echo $asc_or_desc; ?>">Id<i class="fas fa-sort<?php echo $column == 'id' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                 <th class="th-sm">Email</th>
-                                <th class="th-sm">First Name </th>
-                                <th class="th-sm">Last Name </th>
-                                <th class="th-sm">Date of Birth</th>
+                
+					          <th><a href="home.php?column=fname&order=<?php echo $asc_or_desc; ?>">First Name<i class="fas fa-sort<?php echo $column == 'fname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+					          <th><a href="home.php?column=lname&order=<?php echo $asc_or_desc; ?>">Last Name<i class="fas fa-sort<?php echo $column == 'lname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+				          	<th><a href="home.php?column=dob&order=<?php echo $asc_or_desc; ?>">Dob<i class="fas fa-sort<?php echo $column == 'dob' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+		
                                 <th class="th-sm">Number</th>
                                 <th class="th-sm">City</th>
                                 <th class="th-sm">Gender</th>
                                 <th class="th-sm">Departments </th>
                                 <th class="th-sm">File Name </th>
                             </tr>
-                        </thead>
+                        </thead>    
                         <tbody>
                             <?php
-                            while ($row = mysqli_fetch_array($rs_result)) {
-                              
+  
+
+        while ($row = $result->fetch_assoc()):
                             ?>
                                 <tr>
-                                    <td><?php echo  $row["id"] ?></td>
+                                <td<?php echo $column == 'id' ? $add_class : ''; ?>><?php echo $row['id']; ?></td>
                                     <td><?php echo $row["email"] ?></td>
-
-                                    <td><?php echo $row["fname"] ?></td>
-                                    <td><?php echo $row["lname"] ?></td>
-                                    <td><?php echo $row["dob"] ?></td>
-
-                                    
+                                    <td<?php echo $column == 'fname' ? $add_class : ''; ?>><?php echo $row['fname']; ?></td>
+		<td<?php echo $column == 'lname' ? $add_class : ''; ?>><?php echo $row['lname']; ?></td>
+		<td<?php echo $column == 'dob' ? $add_class : ''; ?>><?php echo $row['dob']; ?></td>
+                                  
                                     <td><?php echo $row["numb"] ?></td>
                                     <td><?php echo $row["city"] ?></td>
                                     <td><?php echo $row["gender"] ?></td>
@@ -133,7 +159,7 @@ if (isset($_COOKIE["user_email"])) {
 
                                 </tr>
                             <?php
-                            };
+                              endwhile;
                             ?>
                         </tbody>
                     </table>
@@ -186,6 +212,8 @@ if (isset($_COOKIE["user_email"])) {
         </script>
     </body>
     </html>
+
+
 
 <?php } else {
     header("location:login.php");
