@@ -3,19 +3,72 @@ session_start();
 include "config.php";
 
 if (isset($_COOKIE["user_email"])) {
-    $var= $_COOKIE["user_email"];
+    $var = $_COOKIE["user_email"];
 } elseif (isset($_SESSION["user_email"])) {
-    $var= $_SESSION["user_email"];
+    $var = $_SESSION["user_email"];
 }
 ?>
 
-<?php if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) { ?>
+<?php
+
+
+
+$per_page_record = 5;
+
+if (isset($_GET["page"])) {
+    $page  = $_GET["page"];
+} else {
+    $page = 1;
+}
+
+
+$start_from = ($page - 1) * $per_page_record;
+$columns = array('id', 'fname', 'lname', 'dob');
+
+if (isset($_GET['column']) && in_array($_GET['column'], $columns)) {
+    $column = $_GET['column'];
+} else {
+
+    $column = $columns[0];
+}
+
+if (isset($_GET['order']) && strtolower($_GET['order']) == 'desc') {
+    $sort_order = 'DESC';
+} else {
+    $sort_order = 'ASC';
+}
+
+// Get the result...
+if ($result = $mysqli->query("SELECT * FROM user_d ORDER BY $column $sort_order LIMIT $start_from, $per_page_record")) {
+    // Some variables we need for the table.
+    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+    $add_class = ' class="highlight"';
+}
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    $search = $_POST["query"];
+
+    $sql = "SELECT * FROM user_d  WHERE fname like '%" . $search . "%' OR lname like '%" . $search . "%'  ";
+
+    $result = $mysqli->query($sql);
+    
+} 
+
+if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) { ?>
     <html>
 
     <head>
         <title>Pagination</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="style.css">
+        <!-- Font Awesome -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+
         <style>
             .pagination {
                 display: inline-block;
@@ -39,127 +92,85 @@ if (isset($_COOKIE["user_email"])) {
                 background-color: skyblue;
             }
         </style>
-        
-    </head>
-    <body>
-        <!-- <nav class="navbar navbar-default">
-            <div class="container-fluid">
 
-                <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Home</a></li>
-                    <li> <a href="logout.php"> logout </a>
-                    </li>
+    </head>
+
+    <body>
+        <nav class="navbar">
+            <div class="navbar-container container">
+                <input type="checkbox" name="" id="">
+                <div class="hamburger-lines">
+                    <span class="line line1"></span>
+                    <span class="line line2"></span>
+                    <span class="line line3"></span>
+                </div>
+                <ul class="menu-items">
+                    <li><a href="logout.php">
+                            <h4 class="btn btn-primary ">Logout</h2>
+                        </a></li>
 
                 </ul>
+                <center>
+                    <h3 class="logo"><?php echo $var; ?></h1>
+                </center>
             </div>
-        </nav> -->
-
-        <nav class="navbar">
-        <div class="navbar-container container">
-            <input type="checkbox" name="" id="">
-            <div class="hamburger-lines">
-                <span class="line line1"></span>
-                <span class="line line2"></span>
-                <span class="line line3"></span>
-            </div>
-            <ul class="menu-items">
-            <li ><a  href="logout.php"><h4 class="btn btn-primary ">Logout</h2> </a></li>
-               
-            </ul>
-           <center> <h3 class="logo"><?php echo $var; ?></h1></center>
+        </nav>
         </div>
-    </nav>
+        <center>
+            <div class="container" style="padding-top:150px;">
 
    
-
-        
-        <center>
-            <?php
-          
-            $per_page_record = 5; 
-
-            if (isset($_GET["page"])) {
-                $page  = $_GET["page"];
-            } else {
-                $page = 1;
-            }
-                  
-
-            $start_from = ($page - 1) * $per_page_record;
-
-         
-            $columns = array('id','fname','lname','dob');
-
-            if (isset($_GET['column']) && in_array($_GET['column'], $columns)) {
-                 $column = $_GET['column'];
-            } else {
-                $columns = array('fname','lname','dob');
-                $column = $columns[0];
-            }       
- 
-            if (isset($_GET['order']) && strtolower($_GET['order']) == 'desc') {    
-                $sort_order = 'DESC';
-            } else {
-                $sort_order = 'ASC';
-            }
-             
-            // Get the result...
-            if ($result = $mysqli->query("SELECT * FROM user_d ORDER BY $column $sort_order LIMIT $start_from, $per_page_record"  )) {
-                // Some variables we need for the table.
-                $up_or_down = str_replace(array('ASC','DESC'), array('up','down'), $sort_order);    
-                $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-                $add_class = ' class="highlight"';}
-
-?>
+                <form action="home.php" method="post" style=" margin-bottom:50px; float: left; display:flex;">
+                    <input type="text" name="query" class="form-control" value="<?php 
+                if (
+                    isset($_POST["submit"]) &&
+                    isset($_POST["query"])
+                ) {
+                    echo  $search;
+                } ?>"
+                   />
+                    <input type="submit" value="Search" class="btn btn-primary" />
+                </form>
+            
 
 
-
-
-
-            <div class="container" style="padding-top:150px;"> 
-                <br>
                 <div>
+
 
                     <table class="table table-striped table-bordered table-sm" cellspacing="0">
                         <thead>
                             <tr>
-                                
-                            <th><a href="home.php?column=id&order=<?php echo $asc_or_desc; ?>">Id<i class="fas fa-sort<?php echo $column == 'id' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                <th class="th-sm">Id</th>
                                 <th class="th-sm">Email</th>
-                
-					          <th><a href="home.php?column=fname&order=<?php echo $asc_or_desc; ?>">First Name<i class="fas fa-sort<?php echo $column == 'fname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-					          <th><a href="home.php?column=lname&order=<?php echo $asc_or_desc; ?>">Last Name<i class="fas fa-sort<?php echo $column == 'lname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-				          	<th><a href="home.php?column=dob&order=<?php echo $asc_or_desc; ?>">Dob<i class="fas fa-sort<?php echo $column == 'dob' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-		
+                                <th class="th-sm"><a href="home.php?column=fname&order=<?php echo $asc_or_desc; ?>">First Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'fname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                <th class="th-sm"><a href="home.php?column=lname&order=<?php echo $asc_or_desc; ?>">Last Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'lname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                <th class="th-sm"><a href="home.php?column=dob&order=<?php echo $asc_or_desc; ?>">Dob<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'dob' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                 <th class="th-sm">Number</th>
                                 <th class="th-sm">City</th>
                                 <th class="th-sm">Gender</th>
                                 <th class="th-sm">Departments </th>
                                 <th class="th-sm">File Name </th>
                             </tr>
-                        </thead>    
+                        </thead>
                         <tbody>
                             <?php
-  
-
-        while ($row = $result->fetch_assoc()):
+                            while ($row = $result->fetch_assoc()) :
                             ?>
                                 <tr>
-                                <td<?php echo $column == 'id' ? $add_class : ''; ?>><?php echo $row['id']; ?></td>
-                                    <td><?php echo $row["email"] ?></td>
-                                    <td<?php echo $column == 'fname' ? $add_class : ''; ?>><?php echo $row['fname']; ?></td>
-		<td<?php echo $column == 'lname' ? $add_class : ''; ?>><?php echo $row['lname']; ?></td>
-		<td<?php echo $column == 'dob' ? $add_class : ''; ?>><?php echo $row['dob']; ?></td>
-                                  
-                                    <td><?php echo $row["numb"] ?></td>
-                                    <td><?php echo $row["city"] ?></td>
-                                    <td><?php echo $row["gender"] ?></td>
-                                    <td><?php echo $row["departments"] ?></td>
-                                    <td><img src="my_directory/<?php echo $row["filee"] ?>" height="40px" width="40px"></td>
+                                    <td<?php echo $column == 'id' ? $add_class : ''; ?>><?php echo $row['id']; ?></td>
+                                        <td><?php echo $row["email"] ?></td>
+                                        <td<?php echo $column == 'fname' ? $add_class : ''; ?>><?php echo $row['fname']; ?></td>
+                                            <td<?php echo $column == 'lname' ? $add_class : ''; ?>><?php echo $row['lname']; ?></td>
+                                                <td<?php echo $column == 'dob' ? $add_class : ''; ?>><?php echo $row['dob']; ?></td>
+                                                    <td><?php echo $row["numb"] ?></td>
+                                                    <td><?php echo $row["city"] ?></td>
+                                                    <td><?php echo $row["gender"] ?></td>
+                                                    <td><?php echo $row["departments"] ?></td>
+                                                    <td><img src="my_directory/<?php echo $row["filee"] ?>" height="40px" width="40px"></td>
 
                                 </tr>
                             <?php
-                              endwhile;
+                            endwhile;
                             ?>
                         </tbody>
                     </table>
@@ -170,47 +181,36 @@ if (isset($_COOKIE["user_email"])) {
                         $row = mysqli_fetch_row($rs_result);
                         $total_records = $row[0];
 
-                        echo "</br>";
-
                         $total_pages = ceil($total_records / $per_page_record);
                         $pagLink = "";
 
                         if ($page >= 2) {
-                            echo "<a href='home.php?page=" . ($page - 1) . "'>  Prev </a>";
+                            echo "<a href='home.php?page=" . ($page - 1) . "&column=$column&order=$sort_order'>Prev</a>";
                         }
 
                         for ($i = 1; $i <= $total_pages; $i++) {
                             if ($i == $page) {
-                                $pagLink .= "<a class = 'active' href='home.php?page="
-                                    . $i . "'>" . $i . " </a>";
+                                $pagLink .= "<a class='active' href='home.php?page=$i&column=$column&order=$sort_order'>$i</a>";
                             } else {
-                                $pagLink .= "<a href='home.php?page=" . $i . "'>   
-                                                " . $i . " </a>";
+                                $pagLink .= "<a href='home.php?page=$i&column=$column&order=$sort_order'>$i</a>";
                             }
-                        };
+                        }
+
                         echo $pagLink;
 
                         if ($page < $total_pages) {
-                            echo "<a href='home.php?page=" . ($page + 1) . "'>  Next </a>";
+                            echo "<a href='home.php?page=" . ($page + 1) . "&column=$column&order=$sort_order'>Next</a>";
                         }
-
                         ?>
                     </div>
-                    <div class="inline">
-                        <input id="page" type="number" min="1" max="<?php echo $total_pages ?>" placeholder="<?php echo $page . "/" . $total_pages; ?>" required>
-                        <button onClick="go2Page();">Go</button>
-                    </div>
+
+                   
                 </div>
             </div>
         </center>
-        <script>
-            function go2Page() {
-                var page = document.getElementById("page").value;
-                page = ((page > <?php echo $total_pages; ?>) ? <?php echo $total_pages; ?> : ((page < 1) ? 1 : page));
-                window.location.href = 'home.php?page=' + page;
-            }
-        </script>
+   
     </body>
+
     </html>
 
 
