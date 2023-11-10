@@ -7,20 +7,15 @@ if (isset($_COOKIE["user_email"])) {
 } elseif (isset($_SESSION["user_email"])) {
     $var = $_SESSION["user_email"];
 }
-?>
 
-<?php
-
-
-
+$search = '';
 $per_page_record = 5;
 
 if (isset($_GET["page"])) {
-    $page  = $_GET["page"];
+    $page = $_GET["page"];
 } else {
     $page = 1;
 }
-
 
 $start_from = ($page - 1) * $per_page_record;
 $columns = array('id', 'fname', 'lname', 'dob');
@@ -28,7 +23,6 @@ $columns = array('id', 'fname', 'lname', 'dob');
 if (isset($_GET['column']) && in_array($_GET['column'], $columns)) {
     $column = $_GET['column'];
 } else {
-
     $column = $columns[0];
 }
 
@@ -38,26 +32,21 @@ if (isset($_GET['order']) && strtolower($_GET['order']) == 'desc') {
     $sort_order = 'ASC';
 }
 
+if (isset($_GET['query'])) {
+    $_SESSION['search'] = $_GET["query"];
+    $search = $_SESSION['search'];
+}
+
 // Get the result...
-if ($result = $mysqli->query("SELECT * FROM user_d ORDER BY $column $sort_order LIMIT $start_from, $per_page_record")) {
+if ($result = $mysqli->query("SELECT * FROM user_d WHERE fname LIKE '%" . $search . "%' OR lname LIKE '%" . $search . "%' ORDER BY " . $column . " " . $sort_order . " LIMIT " . $start_from . ", " . $per_page_record)) {
     // Some variables we need for the table.
     $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
     $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
     $add_class = ' class="highlight"';
 }
+?>
 
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-    $search = $_POST["query"];
-
-    $sql = "SELECT * FROM user_d  WHERE fname like '%" . $search . "%' OR lname like '%" . $search . "%'  ";
-
-    $result = $mysqli->query($sql);
-    
-} 
-
-if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) { ?>
+<?php if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) : ?>
     <html>
 
     <head>
@@ -108,115 +97,93 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) { ?>
                     <li><a href="logout.php">
                             <h4 class="btn btn-primary ">Logout</h2>
                         </a></li>
-
                 </ul>
                 <center>
                     <h3 class="logo"><?php echo $var; ?></h1>
                 </center>
             </div>
         </nav>
-        </div>
-        <center>
-            <div class="container" style="padding-top:150px;">
+        <div class="container" style="padding-top:150px;">
 
-   
-                <form action="home.php" method="post" style=" margin-bottom:50px; float: left; display:flex;">
-                    <input type="text" name="query" class="form-control" value="<?php 
-                if (
-                    isset($_POST["submit"]) &&
-                    isset($_POST["query"])
-                ) {
-                    echo  $search;
-                } ?>"
-                   />
-                    <input type="submit" value="Search" class="btn btn-primary" />
-                </form>
-            
+            <form action="home.php" method="GET" style=" margin-bottom:50px; float: left; display:flex;">
+                <input type="text" name="query" class="form-control" value="" />
+                <input type="submit" value="Search" class="btn btn-primary" />
+            </form>
 
-
-                <div>
-
-
-                    <table class="table table-striped table-bordered table-sm" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th class="th-sm">Id</th>
-                                <th class="th-sm">Email</th>
-                                <th class="th-sm"><a href="home.php?column=fname&order=<?php echo $asc_or_desc; ?>">First Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'fname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                <th class="th-sm"><a href="home.php?column=lname&order=<?php echo $asc_or_desc; ?>">Last Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'lname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                <th class="th-sm"><a href="home.php?column=dob&order=<?php echo $asc_or_desc; ?>">Dob<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'dob' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                <th class="th-sm">Number</th>
-                                <th class="th-sm">City</th>
-                                <th class="th-sm">Gender</th>
-                                <th class="th-sm">Departments </th>
-                                <th class="th-sm">File Name </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            while ($row = $result->fetch_assoc()) :
-                            ?>
-                                <tr>
-                                    <td<?php echo $column == 'id' ? $add_class : ''; ?>><?php echo $row['id']; ?></td>
-                                        <td><?php echo $row["email"] ?></td>
-                                        <td<?php echo $column == 'fname' ? $add_class : ''; ?>><?php echo $row['fname']; ?></td>
-                                            <td<?php echo $column == 'lname' ? $add_class : ''; ?>><?php echo $row['lname']; ?></td>
-                                                <td<?php echo $column == 'dob' ? $add_class : ''; ?>><?php echo $row['dob']; ?></td>
-                                                    <td><?php echo $row["numb"] ?></td>
-                                                    <td><?php echo $row["city"] ?></td>
-                                                    <td><?php echo $row["gender"] ?></td>
-                                                    <td><?php echo $row["departments"] ?></td>
-                                                    <td><img src="my_directory/<?php echo $row["filee"] ?>" height="40px" width="40px"></td>
-
-                                </tr>
-                            <?php
-                            endwhile;
-                            ?>
-                        </tbody>
-                    </table>
-                    <div class="pagination">
+            <div>
+                <table class="table table-striped table-bordered table-sm" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="th-sm">Id</th>
+                            <th class="th-sm">Email</th>
+                            <th class="th-sm"><a href="home.php?column=fname&order=<?php echo $asc_or_desc; ?>&query=<?php echo $search; ?>">First Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'fname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                    <th class="th-sm"><a href="home.php?column=lname&order=<?php echo $asc_or_desc; ?>&query=<?php echo $search; ?>">Last Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'lname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                    <th class="th-sm"><a href="home.php?column=dob&order=<?php echo $asc_or_desc; ?>&query=<?php echo $search; ?>">Dob<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'dob' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                            <th class="th-sm">Number</th>
+                            <th class="th-sm">City</th>
+                            <th class="th-sm">Gender</th>
+                            <th class="th-sm">Departments </th>
+                            <th class="th-sm">File Name </th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         <?php
-                        $query = "SELECT COUNT(*) FROM user_d";
-                        $rs_result = mysqli_query($mysqli, $query);
-                        $row = mysqli_fetch_row($rs_result);
-                        $total_records = $row[0];
-
-                        $total_pages = ceil($total_records / $per_page_record);
-                        $pagLink = "";
-
-                        if ($page >= 2) {
-                            echo "<a href='home.php?page=" . ($page - 1) . "&column=$column&order=$sort_order'>Prev</a>";
-                        }
-
-                        for ($i = 1; $i <= $total_pages; $i++) {
-                            if ($i == $page) {
-                                $pagLink .= "<a class='active' href='home.php?page=$i&column=$column&order=$sort_order'>$i</a>";
-                            } else {
-                                $pagLink .= "<a href='home.php?page=$i&column=$column&order=$sort_order'>$i</a>";
-                            }
-                        }
-
-                        echo $pagLink;
-
-                        if ($page < $total_pages) {
-                            echo "<a href='home.php?page=" . ($page + 1) . "&column=$column&order=$sort_order'>Next</a>";
-                        }
+                        while ($row = $result->fetch_assoc()) :
                         ?>
-                    </div>
+                            <tr>
+                                <td<?php echo $column == 'id' ? $add_class : ''; ?>><?php echo $row['id']; ?></td>
+                                <td><?php echo $row["email"] ?></td>
+                                <td<?php echo $column == 'fname' ? $add_class : ''; ?>><?php echo $row['fname']; ?></td>
+                                <td<?php echo $column == 'lname' ? $add_class : ''; ?>><?php echo $row['lname']; ?></td>
+                                <td<?php echo $column == 'dob' ? $add_class : ''; ?>><?php echo $row['dob']; ?></td>
+                                <td><?php echo $row["numb"] ?></td>
+                                <td><?php echo $row["city"] ?></td>
+                                <td><?php echo $row["gender"] ?></td>
+                                <td><?php echo $row["departments"] ?></td>
+                                <td><img src="my_directory/<?php echo $row["filee"] ?>" height="40px" width="40px"></td>
+                            </tr>
+                        <?php
+                        endwhile;
+                        ?>
+                    </tbody>
+                </table>
+                <center>
+                <div class="pagination" >
+                    <?php
+                    $query = "SELECT COUNT(*) FROM user_d WHERE fname LIKE '%" . $search . "%' OR lname LIKE '%" . $search . "%'";
+                    $rs_result = mysqli_query($mysqli, $query);
+                    $row = mysqli_fetch_row($rs_result);
+                    $total_records = $row[0];
 
-                   
-                </div>
+                    $total_pages = ceil($total_records / $per_page_record);
+                    $pagLink = "";
+
+                    if ($page >= 2) {
+                        echo "<a href='home.php?page=" . ($page - 1) . "&query=$search&column=$column&order=$sort_order'>Prev</a>";
+                    }
+
+                    for ($i = 1; $i <= $total_pages; $i++) {
+                        if ($i == $page) {
+                            $pagLink .= "<a class='active' href='home.php?page=$i&query=$search&column=$column&order=$sort_order'>$i</a>";
+                        } else {
+                            $pagLink .= "<a href='home.php?page=$i&query=$search&column=$column&order=$sort_order'>$i</a>";
+                        }
+                    }
+
+                    echo $pagLink;
+
+                    if ($page < $total_pages) {
+                        echo "<a href='home.php?page=" . ($page + 1) . "&query=$search&column=$column&order=$sort_order'>Next</a>";
+                    }
+                    ?>
+                </div></center>
             </div>
-        </center>
-   
+        </div>
     </body>
-
+    <?php
+    $mysqli->close();
+    ?>
     </html>
-
-
-
-<?php } else {
-    header("location:login.php");
-}
-
-?>
+<?php else : ?>
+    <?php header("location:login.php"); ?>
+<?php endif; ?>
