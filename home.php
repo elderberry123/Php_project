@@ -8,7 +8,7 @@ if (isset($_COOKIE["user_email"])) {
     $var = $_SESSION["user_email"];
 }
 
-$search = '';
+$search =  $q= $link='';
 $per_page_record = 5;
 
 if (isset($_GET["page"])) {
@@ -33,17 +33,22 @@ if (isset($_GET['order']) && strtolower($_GET['order']) == 'desc') {
 }
 
 if (isset($_GET['query'])) {
-    $_SESSION['search'] = $_GET["query"];
-    $search = $_SESSION['search'];
+
+   $search = $_GET["query"];
+   $q="WHERE fname LIKE '%" . $search . "%' OR lname LIKE '%" . $search . "%'";
+   $link="&query=";
 }
 
+
 // Get the result...
-if ($result = $mysqli->query("SELECT * FROM user_d WHERE fname LIKE '%" . $search . "%' OR lname LIKE '%" . $search . "%' ORDER BY " . $column . " " . $sort_order . " LIMIT " . $start_from . ", " . $per_page_record)) {
+if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " " . $sort_order . " LIMIT " . $start_from . ", " . $per_page_record)) {
     // Some variables we need for the table.
     $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
     $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
     $add_class = ' class="highlight"';
-}
+} 
+
+                                                         
 ?>
 
 <?php if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) : ?>
@@ -103,22 +108,26 @@ if ($result = $mysqli->query("SELECT * FROM user_d WHERE fname LIKE '%" . $searc
                 </center>
             </div>
         </nav>
-        <div class="container" style="padding-top:150px;">
-
+        <div class="container" style="padding-top:150px; ">
+           <div >
             <form action="home.php" method="GET" style=" margin-bottom:50px; float: left; display:flex;">
                 <input type="text" name="query" class="form-control" value="" />
                 <input type="submit" value="Search" class="btn btn-primary" />
+              
             </form>
-
+            <a class="btn btn-primary" style="margin-left:10px;"  href='home.php'>Reset</a>
+            </div>
             <div>
+
                 <table class="table table-striped table-bordered table-sm" cellspacing="0">
                     <thead>
                         <tr>
                             <th class="th-sm">Id</th>
                             <th class="th-sm">Email</th>
-                            <th class="th-sm"><a href="home.php?column=fname&order=<?php echo $asc_or_desc; ?>&query=<?php echo $search; ?>">First Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'fname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                    <th class="th-sm"><a href="home.php?column=lname&order=<?php echo $asc_or_desc; ?>&query=<?php echo $search; ?>">Last Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'lname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                    <th class="th-sm"><a href="home.php?column=dob&order=<?php echo $asc_or_desc; ?>&query=<?php echo $search; ?>">Dob<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'dob' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                            <th class="th-sm"><a href="home.php?column=fname&order=<?php echo $asc_or_desc; ?><?php echo !empty($search) ? '&query=' . $search : ''; ?>">First Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'fname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                            <th class="th-sm"><a href="home.php?column=lname&order=<?php echo $asc_or_desc; ?><?php echo !empty($search) ? '&query=' . $search : ''; ?>">Last Name<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'lname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                            <th class="th-sm"><a href="home.php?column=dob&order=<?php echo $asc_or_desc; ?><?php echo !empty($search) ? '&query=' . $search : ''; ?>">Dob<i style="margin: 10px;" class="fas fa-sort<?php echo $column == 'dob' ? '-' . $up_or_down : ''; ?>"></i></a></th>    
+                   
                             <th class="th-sm">Number</th>
                             <th class="th-sm">City</th>
                             <th class="th-sm">Gender</th>
@@ -148,35 +157,35 @@ if ($result = $mysqli->query("SELECT * FROM user_d WHERE fname LIKE '%" . $searc
                     </tbody>
                 </table>
                 <center>
-                <div class="pagination" >
-                    <?php
-                    $query = "SELECT COUNT(*) FROM user_d WHERE fname LIKE '%" . $search . "%' OR lname LIKE '%" . $search . "%'";
-                    $rs_result = mysqli_query($mysqli, $query);
-                    $row = mysqli_fetch_row($rs_result);
-                    $total_records = $row[0];
+                <div class="pagination">
+                        <?php
+                        $query = "SELECT COUNT(*) FROM user_d $q";
+                        $rs_result = mysqli_query($mysqli, $query);
+                        $row = mysqli_fetch_row($rs_result);
+                        $total_records = $row[0];
 
-                    $total_pages = ceil($total_records / $per_page_record);
-                    $pagLink = "";
+                        $total_pages = ceil($total_records / $per_page_record);
+                        $pagLink = "";
 
-                    if ($page >= 2) {
-                        echo "<a href='home.php?page=" . ($page - 1) . "&query=$search&column=$column&order=$sort_order'>Prev</a>";
-                    }
-
-                    for ($i = 1; $i <= $total_pages; $i++) {
-                        if ($i == $page) {
-                            $pagLink .= "<a class='active' href='home.php?page=$i&query=$search&column=$column&order=$sort_order'>$i</a>";
-                        } else {
-                            $pagLink .= "<a href='home.php?page=$i&query=$search&column=$column&order=$sort_order'>$i</a>";
+                        if ($page >= 2) {
+                            echo "<a href='home.php?page=" . ($page - 1) . "$link$search&column=$column&order=$sort_order'>Prev</a>";
                         }
-                    }
 
-                    echo $pagLink;
+                        for ($i = 1; $i <= $total_pages; $i++) {
+                            if ($i == $page) {
+                                $pagLink .= "<a class='active' href='home.php?page=$i$link$search&column=$column&order=$sort_order'>$i</a>";
+                            } else {
+                                $pagLink .= "<a href='home.php?page=$i$link$search&column=$column&order=$sort_order'>$i</a>";
+                            }
+                        }
 
-                    if ($page < $total_pages) {
-                        echo "<a href='home.php?page=" . ($page + 1) . "&query=$search&column=$column&order=$sort_order'>Next</a>";
-                    }
-                    ?>
-                </div></center>
+                        echo $pagLink;
+
+                        if ($page < $total_pages) {
+                            echo "<a href='home.php?page=" . ($page + 1) . " $link$search&column=$column&order=$sort_order'>Next</a>";
+                        }
+                        ?>
+                    </div></center>
             </div>
         </div>
     </body>
