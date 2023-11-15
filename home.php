@@ -8,6 +8,8 @@ if (isset($_COOKIE["user_email"])) {
     $var = $_SESSION["user_email"];
 }
 
+if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) { 
+
 $search =  $q= $link='';
 $per_page_record = 5;
 
@@ -40,18 +42,16 @@ if (isset($_GET['query'])) {
 }
 
 
-// Get the result...
 if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " " . $sort_order . " LIMIT " . $start_from . ", " . $per_page_record)) {
-    // Some variables we need for the table.
+
     $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
     $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
     $add_class = ' class="highlight"';
 } 
-
-                                                         
+                                                      
 ?>
 
-<?php if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) : ?>
+
     <html>
 
     <head>
@@ -111,7 +111,9 @@ if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " "
         <div class="container" style="padding-top:150px; ">
            <div >
             <form action="home.php" method="GET" style=" margin-bottom:50px; float: left; display:flex;">
-                <input type="text" name="query" class="form-control" value="" />
+                <input type="text" name="query" class="form-control" value="<?php
+                        echo $search;
+                    ?>" />
                 <input type="submit" value="Search" class="btn btn-primary" />
               
             </form>
@@ -189,10 +191,8 @@ if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " "
             </div>
         </div>
     </body>
-    <?php
-    $mysqli->close();
-    ?>
+  
     </html>
-<?php else : ?>
-    <?php header("location:login.php"); ?>
-<?php endif; ?>
+<?php }else {
+     header("location:login.php");} ?>
+
