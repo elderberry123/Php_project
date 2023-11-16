@@ -48,9 +48,45 @@ if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " "
     $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
     $add_class = ' class="highlight"';
 } 
-                                                      
-?>
 
+// CSV File upload Code 
+
+$select = "SELECT * FROM `user_d` ";
+$result_1 = $mysqli->query($select);
+
+
+function csv_file($result_1) {
+    
+    if($result_1->num_rows > 0){
+        $separator = ",";
+        $filename = "Users_" . date('Y-m-d') . ".csv";
+        // Set header content-type to CSV and filename
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '";');
+        // create a file pointer connected to the output stream
+        $output = fopen('php://output', 'w');
+    
+        //set CSV column headers
+        $fields = array('id', 'email', 'fname', 'lname','numb', 'city', 'gender', 'departments', 'dob', 'filee', 'created_at');
+        fputcsv($output, $fields, $separator);
+        
+        
+        while($row_1 = $result_1->fetch_object()){ 
+         
+            $lineData = array($row_1->id, $row_1->email, $row_1->fname, $row_1->lname,$row_1->numb,$row_1->city,$row_1->gender,$row_1->departments,$row_1->dob,$row_1->filee,$row_1->created_at);
+        fputcsv($output, $lineData, $separator);
+        }
+    
+        fclose($output);
+        exit();
+    }  
+  }
+
+  if (isset($_GET['hello'])) {
+    csv_file($result_1);
+  }
+?>
+    
 
     <html>
 
@@ -118,6 +154,7 @@ if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " "
               
             </form>
             <a class="btn btn-primary" style="margin-left:10px;"  href='home.php'>Reset</a>
+            <a class="btn btn-primary" href='home.php?hello=true'>Download CSV File</a>
             </div>
             <div>
 
@@ -138,9 +175,13 @@ if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " "
                         </tr>
                     </thead>
                     <tbody>
+                    <?php  if ($result->num_rows > 0) {?>
                         <?php
                         while ($row = $result->fetch_assoc()) :
+                           
                         ?>
+                            
+           
                             <tr>
                                 <td<?php echo $column == 'id' ? $add_class : ''; ?>><?php echo $row['id']; ?></td>
                                 <td><?php echo $row["email"] ?></td>
@@ -153,10 +194,15 @@ if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " "
                                 <td><?php echo $row["departments"] ?></td>
                                 <td><img src="my_directory/<?php echo $row["filee"] ?>" height="40px" width="40px"></td>
                             </tr>
-                        <?php
-                        endwhile;
-                        ?>
-                    </tbody>
+                          
+                        <?php endwhile;?>
+                        <?php }else{
+                                ?>
+                                   <tr>
+                                   <td  colspan="10"><center>NO Data Found</center></td>
+                            </tr>
+                            <?php } ?>
+                  </tbody>
                 </table>
                 <center>
                 <div class="pagination">
@@ -193,6 +239,14 @@ if ($result = $mysqli->query("SELECT * FROM user_d $q ORDER BY " . $column . " "
     </body>
   
     </html>
-<?php }else {
+<?php
+
+
+
+
+
+exit();
+
+}else {
      header("location:login.php");} ?>
 
