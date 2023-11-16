@@ -114,7 +114,7 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
             $file = fopen($file_tmp, "r");
             fgetcsv($file);
             while (($row_2 = fgetcsv($file)) !== FALSE) {
-                // Insert csv data into the `import_csv_data` database table
+                // Insert csv data into the database table
                 $orgDate = $row_2[9];
                 $newDate = date("Y-m-d", strtotime($orgDate));
 
