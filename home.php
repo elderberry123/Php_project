@@ -88,7 +88,7 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
         }
     }
 
-    if (isset($_GET['csv_f'])) {
+    if (isset($_GET['hello'])) {
         csv_file($mysqli);
     }
 
@@ -113,18 +113,20 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
 
             $file = fopen($file_tmp, "r");
             fgetcsv($file);
+           echo "<table><tr><th >Data Inserted list</th> <th >Not Inserted data list</th></tr>";
             while (($row_2 = fgetcsv($file)) !== FALSE) {
-                // Insert csv data into the database table
+             
                 $orgDate = $row_2[9];
                 $newDate = date("Y-m-d", strtotime($orgDate));
-
-                $sql_1 =
-                    "INSERT INTO user_d (email, fname, lname, pass, numb, cpass, city, gender, departments, dob, filee) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-                if (!filter_var($row_2[0], FILTER_VALIDATE_EMAIL)) {
-                    $error = "* Email is not valid";
-                }
-                else{
+                $check_qury = "SELECT email FROM user_d WHERE email = ?";
+                $check_stmt = $mysqli->prepare($check_qury);
+            
+                $check_stmt->bind_param("s", $row_2[0]);
+                $check_stmt->execute();
+                $check_stmt->store_result();
+            
+                $sql_1 = "INSERT INTO user_d (email, fname, lname, pass, numb, cpass, city, gender, departments, dob, filee) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
                 if ($stmt = $mysqli->prepare($sql_1)) {
                     $stmt->bind_param(
                         "ssssissssss",
@@ -141,18 +143,20 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
                         $row_2[10]
                     );
                     if ($stmt->execute()) {
-
-                        $success = "* Following CSV data is imported successfully.";
-                        $success_data .= "<li>" . $row_2[0] . " " . $row_2[1] . "</li>";
-                    } else {
-                        $error = "* Data is not inserted";
+                     
+                        echo  "<tr><td>" . $row_2[0] . " " . $row_2[1] . "</td>";
+                       
+                    }else{
+                        
+                      
+                            echo "<td>" .$row_2[0]."</td></tr>";
                     }
                 }
-                 } }
-            fclose($file);
+                 }     echo "</table>";
+            
         }
     }
-
+ 
 
 ?>
 
@@ -222,7 +226,7 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
                     <input type="submit" value="Search" class="btn btn-primary" />
                 </form>
                 <a class="btn btn-primary" style="margin-left:10px;" href='home.php'>Reset</a>
-                <a class="btn btn-primary" href='home.php?csv_f=true'>Download CSV File</a>
+                <a class="btn btn-primary" href='home.php?hello=true'>Download CSV File</a>
             </div>
             <div style="margin:50px; ">
                 <form method="post" action="" enctype="multipart/form-data" style="float: left; display:flex;">
@@ -232,8 +236,7 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
                 </form>
                 <br>
                 <br>
-                <p style=""><?php echo $error;
-                            echo $success_data; ?></p>
+                <p style=""><?php echo $error;?></p>
                 <br>
             </div>
 
