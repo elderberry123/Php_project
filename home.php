@@ -88,7 +88,7 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
         }
     }
 
-    if (isset($_GET['hello'])) {
+    if (isset($_GET['csv_f'])) {
         csv_file($mysqli);
     }
 
@@ -222,7 +222,7 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
                     <input type="submit" value="Search" class="btn btn-primary" />
                 </form>
                 <a class="btn btn-primary" style="margin-left:10px;" href='home.php'>Reset</a>
-                <a class="btn btn-primary" href='home.php?hello=true'>Download CSV File</a>
+                <a class="btn btn-primary" href='home.php?csv_f=true'>Download CSV File</a>
             </div>
             <div style="margin:50px; ">
                 <form method="post" action="" enctype="multipart/form-data" style="float: left; display:flex;">
