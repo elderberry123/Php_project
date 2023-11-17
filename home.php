@@ -113,17 +113,11 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
 
             $file = fopen($file_tmp, "r");
             fgetcsv($file);
-           echo "<table><tr><th >Data Inserted list</th> <th >Not Inserted data list</th></tr>";
+       
             while (($row_2 = fgetcsv($file)) !== FALSE) {
              
                 $orgDate = $row_2[9];
                 $newDate = date("Y-m-d", strtotime($orgDate));
-                $check_qury = "SELECT email FROM user_d WHERE email = ?";
-                $check_stmt = $mysqli->prepare($check_qury);
-            
-                $check_stmt->bind_param("s", $row_2[0]);
-                $check_stmt->execute();
-                $check_stmt->store_result();
             
                 $sql_1 = "INSERT INTO user_d (email, fname, lname, pass, numb, cpass, city, gender, departments, dob, filee) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
@@ -143,16 +137,15 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
                         $row_2[10]
                     );
                     if ($stmt->execute()) {
-                     
-                        echo  "<tr><td>" . $row_2[0] . " " . $row_2[1] . "</td>";
+                    
+                        $success_data ="<li>" . $row_2[0] . " " . $row_2[1] . "</li>";
                        
                     }else{
-                        
-                      
-                            echo "<td>" .$row_2[0]."</td></tr>";
+                       echo  "<li>" . $row_2[0] . "</li>";
+                         
                     }
                 }
-                 }     echo "</table>";
+                 }  
             
         }
     }
@@ -236,7 +229,7 @@ if (!empty($_COOKIE["user_email"]) or $_SESSION["user_email"]) {
                 </form>
                 <br>
                 <br>
-                <p style=""><?php echo $error;?></p>
+                <p style=""><?php echo   $success_data. $error;?></p>
                 <br>
             </div>
 
